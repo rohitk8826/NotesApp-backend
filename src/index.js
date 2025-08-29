@@ -6,29 +6,29 @@ const { connectDB } = require("./db");
 
 const app = express();
 
-// Middlewares
+// ✅ Allowed origins
 const allowedOrigins = [
-  "http://localhost:5173", // for local dev
+  "http://localhost:5173", // local dev
   "https://mern-notes-app-sepia.vercel.app", // vercel frontend
 ];
 
+// ✅ Proper dynamic origin check
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS: " + origin));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
 
-// ✅ handle preflight requests
-app.options(
-  "*",
-  cors({
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-  })
-);
+// ✅ Ensure preflight requests always handled
+app.options("*", cors());
 
 app.use(express.json());
 app.use(morgan("dev"));
@@ -45,7 +45,7 @@ app.use((req, res) => {
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error("Global error handler:", err);
+  console.error("Global error handler:", err.message);
   res.status(500).json({ success: false, message: "Server Error" });
 });
 
@@ -53,5 +53,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8080;
 (async () => {
   await connectDB();
-  app.listen(PORT, () => console.log(`API running on PORT ${PORT}`));
+  app.listen(PORT, () => console.log(`✅ API running on PORT ${PORT}`));
 })();
