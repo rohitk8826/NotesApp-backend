@@ -7,12 +7,29 @@ const { connectDB } = require("./db");
 const app = express();
 
 // Middlewares
+const allowedOrigins = [
+  "http://localhost:5173", // for local dev
+  "https://mern-notes-app-sepia.vercel.app", // vercel frontend
+];
+
 app.use(
   cors({
-    origin: ("https://mern-notes-app-sepia.vercel.app" || "*").split(","),
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
+
+// ✅ handle preflight requests
+app.options(
+  "*",
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(morgan("dev"));
 
