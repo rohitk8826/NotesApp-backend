@@ -9,7 +9,7 @@ const app = express();
 // Middlewares
 app.use(
   cors({
-    origin: (process.env.CORS_ORIGIN || "*").split(","),
+    origin: ("https://mern-notes-app-sepia.vercel.app" || "*").split(","),
     credentials: true,
   })
 );
