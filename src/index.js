@@ -6,16 +6,19 @@ const { connectDB } = require("./db");
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173", // local dev
+  "https://mern-notes-app-sepia.vercel.app", // vercel frontend
+];
+
+// ✅ Fix: reflect the request origin if it’s in the whitelist
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = [
-      "http://localhost:5173",
-      "https://mern-notes-app-sepia.vercel.app"
-    ];
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, origin); // reflect the origin
+    if (!origin) return callback(null, true); // allow non-browser requests
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      return callback(new Error("Not allowed by CORS"));
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -24,7 +27,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // handle preflight
-
 
 app.use(express.json());
 app.use(morgan("dev"));
@@ -41,7 +43,7 @@ app.use((req, res) => {
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error("Global error handler:", err.message);
+  console.error("Global error handler:", err);
   res.status(500).json({ success: false, message: "Server Error" });
 });
 
@@ -49,5 +51,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8080;
 (async () => {
   await connectDB();
-  app.listen(PORT, () => console.log(`✅ API running on PORT ${PORT}`));
+  app.listen(PORT, () => console.log(`API running on PORT ${PORT}`));
 })();
