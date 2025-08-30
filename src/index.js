@@ -12,18 +12,30 @@ const allowedOrigins = [
   process.env.CORS_ORIGIN,
 ].filter(Boolean);
 
-// ✅ CORS setup for JWT (no cookies)
+// ✅ Debug log every incoming request
+app.use((req, res, next) => {
+  console.log("➡️", req.method, req.path, "Origin:", req.headers.origin);
+  next();
+});
+
+// ✅ CORS setup (looser match + logging)
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow non-browser requests
-    if (allowedOrigins.includes(origin)) {
+    if (!origin) {
+      console.log("✔️ Allowing non-browser request (no origin)");
+      return callback(null, true);
+    }
+
+    const isAllowed = allowedOrigins.some((o) => origin.startsWith(o));
+    if (isAllowed) {
+      console.log("✔️ Allowed CORS origin:", origin);
       return callback(null, true);
     } else {
-      return callback(new Error("Not allowed by CORS"));
+      console.warn("❌ Blocked by CORS:", origin);
+      return callback(new Error("Not allowed by CORS: " + origin));
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  // ❌ Remove credentials: true (only for cookies, not for JWT headers)
 };
 
 app.use(cors(corsOptions));
