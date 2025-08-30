@@ -6,11 +6,16 @@ const { connectDB } = require("./db");
 
 const app = express();
 
-// Allowlist
+// ✅ Allowlist with fallback
 const allowedOrigins = [
   "http://localhost:5173",
-  process.env.CORS_ORIGIN, // e.g. https://mern-notes-app-sepia.vercel.app
+  "https://mern-notes-app-sepia.vercel.app", // Add this as fallback
+  process.env.CORS_ORIGIN,
 ].filter(Boolean);
+
+// ✅ Debug: Log what origins are allowed
+console.log("🌐 Allowed CORS origins:", allowedOrigins);
+console.log("📝 CORS_ORIGIN env var:", process.env.CORS_ORIGIN);
 
 // ✅ Debug log every incoming request
 app.use((req, res, next) => {
@@ -18,10 +23,26 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ Single CORS setup (used everywhere)
+// ✅ Enhanced CORS setup
 const corsOptions = {
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    console.log("🔍 Checking origin:", origin);
+
+    // Allow requests with no origin (mobile apps, etc.)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      console.log("✅ Origin allowed:", origin);
+      callback(null, true);
+    } else {
+      console.log("❌ Origin blocked:", origin);
+      console.log("📋 Allowed origins:", allowedOrigins);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
@@ -50,5 +71,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8080;
 (async () => {
   await connectDB();
-  app.listen(PORT, () => console.log(`API running on PORT ${PORT}`));
+  app.listen(PORT, () => console.log(`🚀 API running on PORT ${PORT}`));
 })();
