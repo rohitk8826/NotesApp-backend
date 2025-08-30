@@ -1,7 +1,7 @@
 // routes/health.js
 const router = require("express").Router();
 
-router.get("/health", (req, res) => {
+router.get("/", (req, res) => {
   res.json({
     success: true,
     data: { status: "ok" },

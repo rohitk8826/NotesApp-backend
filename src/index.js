@@ -7,9 +7,9 @@ const { connectDB } = require("./db");
 const app = express();
 
 const allowedOrigins = [
-  "http://localhost:5173", // local dev
-  "https://mern-notes-app-sepia.vercel.app", // vercel frontend
-];
+  "http://localhost:5173",
+  process.env.CORS_ORIGIN,
+].filter(Boolean); // removes undefined
 
 // ✅ Fix: reflect the request origin if it’s in the whitelist
 const corsOptions = {
@@ -34,7 +34,7 @@ app.use(morgan("dev"));
 // Routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/notes", require("./routes/notes"));
-app.use("/api", require("./routes/health"));
+app.use("/api/health", require("./routes/health"));
 
 // 404 Handler
 app.use((req, res) => {
