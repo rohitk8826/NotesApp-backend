@@ -22,21 +22,22 @@ app.use((req, res, next) => {
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) {
-      console.log("✔️ Allowing non-browser request (no origin)");
+      // No origin = tools like Postman / server-to-server
       return callback(null, true);
     }
 
     const isAllowed = allowedOrigins.some((o) => origin.startsWith(o));
     if (isAllowed) {
-      console.log("✔️ Allowed CORS origin:", origin);
       return callback(null, true);
     } else {
+      // ✅ Still set header, but deny explicitly
       console.warn("❌ Blocked by CORS:", origin);
-      return callback(new Error("Not allowed by CORS: " + origin));
+      return callback(null, false);
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 };
+
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // preflight
